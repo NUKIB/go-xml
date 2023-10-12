@@ -628,7 +628,7 @@ func (cfg *Config) addStandardHelpers() {
 				s := string(bytes.TrimSpace(text))
 				*t, err = time.Parse(format, s)
 				if _, ok := err.(*time.ParseError); ok {
-					*t, err = time.Parse(format + "Z07:00", s)
+					*t, err = time.Parse(strings.Replace(format, "Z07:00", "", 1), s)
 				}
 				return err
 			`),
@@ -636,7 +636,7 @@ func (cfg *Config) addStandardHelpers() {
 			Args("t time.Time", "format string").
 			Returns("[]byte", "error").
 			Body(`
-				return []byte(t.Format(format + "Z07:00")), nil
+				return []byte(t.Format(format)), nil
 			`),
 	}
 	for _, fn := range fns {
@@ -646,13 +646,13 @@ func (cfg *Config) addStandardHelpers() {
 	cfg.helperTypes = make(map[xml.Name]spec)
 	timeTypes := map[xsd.Builtin]string{
 		xsd.Date:       "2006-01-02",
-		xsd.DateTime:   "2006-01-02T15:04:05.999999999",
+		xsd.DateTime:   "2006-01-02T15:04:05.999999999Z07:00",
 		xsd.GDay:       "---02",
 		xsd.GMonth:     "--01",
 		xsd.GMonthDay:  "--01-02",
 		xsd.GYear:      "2006",
 		xsd.GYearMonth: "2006-01",
-		xsd.Time:       "15:04:05.999999999",
+		xsd.Time:       "15:04:05.999999999Z07:00",
 	}
 
 	for timeType, timeSpec := range timeTypes {
@@ -662,7 +662,7 @@ func (cfg *Config) addStandardHelpers() {
 			expr:    builtinExpr(timeType),
 			private: true,
 			xsdType: timeType,
-			methods: []*ast.FuncDecl{
+			methods: append([]*ast.FuncDecl{
 				gen.Func("UnmarshalText").
 					Receiver("t *"+name).
 					Args("text []byte").
@@ -674,33 +674,9 @@ func (cfg *Config) addStandardHelpers() {
 					Returns("[]byte", "error").
 					Body(`return _marshalTime((time.Time)(t), %q)`, timeSpec).
 					MustDecl(),
-				// workaround golang.org/issues/11939
-				gen.Func("MarshalXML").
-					Receiver("t "+name).
-					Args("e *xml.Encoder", "start xml.StartElement").
-					Returns("error").
-					Body(`
-						if (time.Time)(t).IsZero() {
-							return nil
-						}
-						m, err := t.MarshalText()
-						if err != nil {
-							return err
-						}
-						return e.EncodeElement(m, start)
-					`).MustDecl(),
-				gen.Func("MarshalXMLAttr").
-					Receiver("t "+name).
-					Args("name xml.Name").
-					Returns("xml.Attr", "error").
-					Body(`
-						if (time.Time)(t).IsZero() {
-							return xml.Attr{}, nil
-						}
-						m, err := t.MarshalText()
-						return xml.Attr{Name: name, Value: string(m)}, err
-					`).MustDecl(),
 			},
+				addTimeMarshalMethods(name)...,
+			),
 			helperFuncs: []string{"_unmarshalTime", "_marshalTime"},
 		}
 	}
