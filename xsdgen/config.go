@@ -681,58 +681,59 @@ func (cfg *Config) addStandardHelpers() {
 		}
 	}
 
-	cfg.helperTypes[xsd.XMLName(xsd.HexBinary)] = spec{
-		name:    "xsd" + xsd.HexBinary.String(),
-		expr:    builtinExpr(xsd.HexBinary),
-		private: true,
-		xsdType: xsd.HexBinary,
-		methods: []*ast.FuncDecl{
-			gen.Func("UnmarshalText").
-				Receiver("b *xsd" + xsd.HexBinary.String()).
-				Args("text []byte").
-				Returns("err error").
-				Body(`
-					*b, err = hex.DecodeString(string(text))
-					return
-				`).MustDecl(),
-			gen.Func("MarshalText").
-				Receiver("b xsd"+xsd.HexBinary.String()).
-				Returns("[]byte", "error").
-				Body(`
-					n := hex.EncodedLen(len(b))
-					buf := make([]byte, n)
-					hex.Encode(buf, []byte(b))
-					return buf, nil
-				`).MustDecl(),
-		},
-	}
+	/*
+		cfg.helperTypes[xsd.XMLName(xsd.HexBinary)] = spec{
+			name:    "xsd" + xsd.HexBinary.String(),
+			expr:    builtinExpr(xsd.HexBinary),
+			private: true,
+			xsdType: xsd.HexBinary,
+			methods: []*ast.FuncDecl{
+				gen.Func("UnmarshalText").
+					Receiver("b *xsd" + xsd.HexBinary.String()).
+					Args("text []byte").
+					Returns("err error").
+					Body(`
+						*b, err = hex.DecodeString(string(text))
+						return
+					`).MustDecl(),
+				gen.Func("MarshalText").
+					Receiver("b xsd"+xsd.HexBinary.String()).
+					Returns("[]byte", "error").
+					Body(`
+						n := hex.EncodedLen(len(b))
+						buf := make([]byte, n)
+						hex.Encode(buf, []byte(b))
+						return buf, nil
+					`).MustDecl(),
+			},
+		}
 
-	cfg.helperTypes[xsd.XMLName(xsd.Base64Binary)] = spec{
-		name:    "xsd" + xsd.Base64Binary.String(),
-		expr:    builtinExpr(xsd.Base64Binary),
-		private: true,
-		xsdType: xsd.Base64Binary,
-		methods: []*ast.FuncDecl{
-			gen.Func("UnmarshalText").
-				Receiver("b *xsd" + xsd.Base64Binary.String()).
-				Args("text []byte").
-				Returns("err error").
-				Body(`
-					*b, err = base64.StdEncoding.DecodeString(string(text))
-					return
-				`).MustDecl(),
-			gen.Func("MarshalText").
-				Receiver("b xsd"+xsd.Base64Binary.String()).
-				Returns("[]byte", "error").
-				Body(`
-					var buf bytes.Buffer
-					enc := base64.NewEncoder(base64.StdEncoding, &buf)
-					enc.Write([]byte(b))
-					enc.Close()
-					return buf.Bytes(), nil
-				`).MustDecl(),
-		},
-	}
+		cfg.helperTypes[xsd.XMLName(xsd.Base64Binary)] = spec{
+			name:    "xsd" + xsd.Base64Binary.String(),
+			expr:    builtinExpr(xsd.Base64Binary),
+			private: true,
+			xsdType: xsd.Base64Binary,
+			methods: []*ast.FuncDecl{
+				gen.Func("UnmarshalText").
+					Receiver("b *xsd" + xsd.Base64Binary.String()).
+					Args("text []byte").
+					Returns("err error").
+					Body(`
+						*b, err = base64.StdEncoding.DecodeString(string(text))
+						return
+					`).MustDecl(),
+				gen.Func("MarshalText").
+					Receiver("b xsd"+xsd.Base64Binary.String()).
+					Returns("[]byte", "error").
+					Body(`
+						var buf bytes.Buffer
+						enc := base64.NewEncoder(base64.StdEncoding, &buf)
+						enc.Write([]byte(b))
+						enc.Close()
+						return buf.Bytes(), nil
+					`).MustDecl(),
+			},
+		} */
 }
 
 // SOAP arrays (and other similar types) are complex types with a single
