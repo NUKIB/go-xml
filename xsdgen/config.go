@@ -629,6 +629,9 @@ func (cfg *Config) addStandardHelpers() {
 				*t, err = time.Parse(format, s)
 				if _, ok := err.(*time.ParseError); ok {
 					*t, err = time.Parse(strings.Replace(format, "Z07:00", "", 1), s)
+					if _, ok := err.(*time.ParseError); ok {
+						*t, err = time.Parse(format+"Z07:00", s)
+					}
 				}
 				return err
 			`),
