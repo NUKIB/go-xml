@@ -627,9 +627,18 @@ func (cfg *Config) addStandardHelpers() {
 			Body(`
 				s := string(bytes.TrimSpace(text))
 				*t, err = time.Parse(format, s)
+
+                // Default format
 				if _, ok := err.(*time.ParseError); ok {
+					// Format without timezone
 					*t, err = time.Parse(strings.Replace(format, "Z07:00", "", 1), s)
+
+					if _, ok := err.(*time.ParseError); ok {
+                        // Format with timezone
+						*t, err = time.Parse(format+"Z07:00", s)
+					}
 				}
+
 				return err
 			`),
 		gen.Func("_marshalTime").
