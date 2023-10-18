@@ -178,7 +178,7 @@ func (cfg *Config) gen(primaries, deps []xsd.Schema) (*Code, error) {
 	// Check for any duplicate names between namespaces
 	for i, primary := range primaries {
 		for k, _ := range primary.Types {
-			if types[k.Local] {
+			if k.Local != "_self" && types[k.Local] {
 				rename[k] = k.Local + fmt.Sprint(i)
 			} else {
 				types[k.Local] = true
