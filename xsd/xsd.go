@@ -317,6 +317,34 @@ func XMLName(t Type) xml.Name {
 	panic(fmt.Sprintf("xsd: unexpected xsd.Type %[1]T %[1]v passed to XMLName", t))
 }
 
+func XMLNamePtr(t Type) *xml.Name {
+	switch t := t.(type) {
+	case *SimpleType:
+		return &t.Name
+	case *ComplexType:
+		return &t.Name
+	case Builtin:
+		return &xml.Name{Space: t.Name().Space, Local: t.Name().Local}
+	case linkedType:
+		return &xml.Name{Space: t.Space, Local: t.Local}
+	}
+	panic(fmt.Sprintf("xsd: unexpected xsd.Type %[1]T %[1]v passed to XMLNamePtr", t))
+}
+
+func Elements(t Type) *[]Element {
+	switch t := t.(type) {
+	case *SimpleType:
+		return &[]Element{}
+	case *ComplexType:
+		return &t.Elements
+	case Builtin:
+		return &[]Element{}
+	case linkedType:
+		return &[]Element{}
+	}
+	panic(fmt.Sprintf("xsd: unexpected xsd.Type %[1]T %[1]v passed to Elements", t))
+}
+
 // Base returns the base type that a Type is derived from.
 // If the value is of type Builtin, Base will return nil.
 func Base(t Type) Type {

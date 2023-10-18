@@ -172,7 +172,30 @@ func (cfg *Config) gen(primaries, deps []xsd.Schema) (*Code, error) {
 		}
 	}
 
+	rename := make(map[xml.Name]string)
+	types := make(map[string]bool)
+
+	// Check for any duplicate names between namespaces
+	for i, primary := range primaries {
+		for k, _ := range primary.Types {
+			if types[k.Local] {
+				rename[k] = k.Local + fmt.Sprint(i)
+			} else {
+				types[k.Local] = true
+			}
+		}
+	}
+
 	for _, primary := range primaries {
+		// Rename duplicate types so they generate properly
+		for _, v := range primary.Types {
+			for i := range *xsd.Elements(v) {
+				if val, exists := rename[*xsd.XMLNamePtr((*xsd.Elements(v))[i].Type)]; exists {
+					xsd.XMLNamePtr((*xsd.Elements(v))[i].Type).Local = val
+				}
+			}
+		}
+
 		cfg.debugf("flattening type hierarchy for schema %q", primary.TargetNS)
 		types := cfg.flatten(primary.Types)
 		types = cfg.expandComplexTypes(types)
