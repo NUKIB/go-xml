@@ -129,6 +129,7 @@ func (cfg *Config) GenCLI(arguments ...string) error {
 		err                                error
 		replaceRules                       commandline.ReplaceRuleList
 		xmlns                              commandline.Strings
+		nsPrefixes                         commandline.Strings
 		fs                                 = flag.NewFlagSet("xsdgen", flag.ExitOnError)
 		packageName                        = fs.String("pkg", "", "name of the the generated package")
 		output                             = fs.String("o", "xsdgen_output.go", "name of the output file")
@@ -140,6 +141,7 @@ func (cfg *Config) GenCLI(arguments ...string) error {
 	)
 	fs.Var(&replaceRules, "r", "replacement rule 'regex -> repl' (can be used multiple times)")
 	fs.Var(&xmlns, "ns", "target namespace(s) to generate types for")
+	fs.Var(&xmlns, "nsp", "struct prefixes in case of duplicate name")
 
 	if err = fs.Parse(arguments); err != nil {
 		return err
@@ -155,6 +157,7 @@ func (cfg *Config) GenCLI(arguments ...string) error {
 	cfg.Option(Namespaces(xmlns...))
 	cfg.Option(FollowImports(*followImports))
 	cfg.Option(TargetNamespacesOnly(*targetNamespacesOnly))
+	cfg.Option(NSPrefixes(nsPrefixes...))
 	cfg.Option(ApplyXMLNameToTopLevelElementTypes(*applyXMLNameToTopLevelElementTypes))
 	for _, r := range replaceRules {
 		cfg.Option(replaceAllNamesRegex(r.From, r.To))
