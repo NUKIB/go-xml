@@ -177,9 +177,14 @@ func (cfg *Config) gen(primaries, deps []xsd.Schema) (*Code, error) {
 
 	// Check for any duplicate names between namespaces
 	for i, primary := range primaries {
-		for k, _ := range primary.Types {
+		for k := range primary.Types {
 			if !strings.HasPrefix(k.Local, "_") && types[k.Local] != "" && types[k.Local] != k.Space {
-				rename[k] = k.Local + fmt.Sprint(i)
+				name := cfg.nsPrefixes[k.Space] + k.Local
+				if name == k.Local {
+					name += fmt.Sprint(i)
+				}
+
+				rename[k] = name
 			} else {
 				types[k.Local] = k.Space
 			}

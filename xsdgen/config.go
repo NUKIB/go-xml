@@ -21,6 +21,7 @@ type Config struct {
 	logger     Logger
 	loglevel   int
 	namespaces []string
+	nsPrefixes map[string]string
 	pkgname    string
 	// load xsd imports recursively into memory before parsing
 	followImports                      bool
@@ -90,6 +91,30 @@ func Namespaces(xmlns ...string) Option {
 		prev := cfg.namespaces
 		cfg.namespaces = xmlns
 		return Namespaces(prev...)
+	}
+}
+
+// NSPrefixes adds prefix to elements with duplicate name
+// in different namespaces.
+func NSPrefixes(nsPrefixes ...string) Option {
+	return func(cfg *Config) Option {
+		prev := cfg.nsPrefixes
+		for _, prefix := range nsPrefixes {
+			s := strings.Split(prefix, ":")
+			if len(s) != 2 {
+				return nil
+			}
+
+			cfg.nsPrefixes[s[0]] = s[1]
+		}
+
+		var result []string
+
+		for ns, prefix := range prev {
+			result = append(result, ns+":"+prefix)
+		}
+
+		return NSPrefixes(result...)
 	}
 }
 
