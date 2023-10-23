@@ -100,7 +100,7 @@ func NSPrefixes(nsPrefixes ...string) Option {
 	return func(cfg *Config) Option {
 		prev := cfg.nsPrefixes
 		for _, prefix := range nsPrefixes {
-			s := strings.Split(prefix, ":")
+			s := strings.Split(prefix, "->")
 			if len(s) != 2 {
 				return nil
 			}
@@ -111,7 +111,7 @@ func NSPrefixes(nsPrefixes ...string) Option {
 		var result []string
 
 		for ns, prefix := range prev {
-			result = append(result, ns+":"+prefix)
+			result = append(result, ns+"->"+prefix)
 		}
 
 		return NSPrefixes(result...)
