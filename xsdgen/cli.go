@@ -141,7 +141,7 @@ func (cfg *Config) GenCLI(arguments ...string) error {
 	)
 	fs.Var(&replaceRules, "r", "replacement rule 'regex -> repl' (can be used multiple times)")
 	fs.Var(&xmlns, "ns", "target namespace(s) to generate types for")
-	fs.Var(&xmlns, "nsp", "struct prefixes in case of duplicate name")
+	fs.Var(&nsPrefixes, "np", "struct prefixes in case of duplicate name")
 
 	if err = fs.Parse(arguments); err != nil {
 		return err
