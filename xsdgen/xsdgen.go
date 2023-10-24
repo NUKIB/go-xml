@@ -175,16 +175,22 @@ func (cfg *Config) gen(primaries, deps []xsd.Schema) (*Code, error) {
 	rename := make(map[xml.Name]string)
 	types := make(map[string]string)
 
-	// Check for any duplicate names between namespaces
+	// Check for any duplicate names between namespaces and for namespace based struct prefixes
 	for i, primary := range primaries {
 		for k := range primary.Types {
-			if !strings.HasPrefix(k.Local, "_") && types[k.Local] != "" && types[k.Local] != k.Space {
-				name := cfg.nsPrefixes[k.Space] + k.Local
-				if name == k.Local {
-					name += fmt.Sprint(i)
-				}
+			if strings.HasPrefix(k.Local, "_") {
+				continue
+			}
 
-				rename[k] = name
+			if prefix := cfg.nsPrefixes[k.Space]; prefix != "" {
+				cfg.debugf("found type %s in namespace %s, pending rename to %s", k.Local, k.Space, rename[k])
+				rename[k] = prefix
+				continue
+			}
+
+			if types[k.Local] != "" && types[k.Local] != k.Space {
+				rename[k] = k.Local + fmt.Sprint(i)
+				cfg.debugf("found unhandled duplicate type %s in namespace %s, pending rename to %s", k.Local, k.Space, rename[k])
 			} else {
 				types[k.Local] = k.Space
 			}
@@ -196,6 +202,7 @@ func (cfg *Config) gen(primaries, deps []xsd.Schema) (*Code, error) {
 		for _, v := range primary.Types {
 			for i := range *xsd.Elements(v) {
 				if val, exists := rename[*xsd.XMLNamePtr((*xsd.Elements(v))[i].Type)]; exists {
+					cfg.debugf("renaming type %s in namespace %s to %s", xsd.XMLName((*xsd.Elements(v))[i].Type).Local, xsd.XMLName((*xsd.Elements(v))[i].Type).Space, val)
 					xsd.XMLNamePtr((*xsd.Elements(v))[i].Type).Local = val
 				}
 			}
