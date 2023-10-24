@@ -98,6 +98,10 @@ func Namespaces(xmlns ...string) Option {
 // in different namespaces.
 func NSPrefixes(nsPrefixes ...string) Option {
 	return func(cfg *Config) Option {
+		if cfg.nsPrefixes == nil {
+			cfg.nsPrefixes = make(map[string]string)
+		}
+
 		prev := cfg.nsPrefixes
 		for _, prefix := range nsPrefixes {
 			s := strings.Split(prefix, "->")
