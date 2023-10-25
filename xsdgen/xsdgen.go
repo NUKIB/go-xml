@@ -183,7 +183,7 @@ func (cfg *Config) gen(primaries, deps []xsd.Schema) (*Code, error) {
 			}
 
 			if prefix := cfg.nsPrefixes[k.Space]; prefix != "" {
-				rename[k] = k.Local + prefix
+				rename[k] = prefix + k.Local
 				cfg.debugf("found type %s in namespace %s, pending rename to %s", k.Local, k.Space, rename[k])
 				continue
 			}
