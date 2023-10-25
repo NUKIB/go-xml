@@ -47,7 +47,7 @@ func lookupTargetNS(data ...[]byte) []string {
 			continue
 		}
 		outer := xmltree.Element{
-			Children: []xmltree.Element{*tree},
+			Children: []*xmltree.Element{tree},
 		}
 		elts := outer.Search("http://www.w3.org/2001/XMLSchema", "schema")
 		for _, el := range elts {
@@ -200,10 +200,11 @@ func (cfg *Config) gen(primaries, deps []xsd.Schema) (*Code, error) {
 	for _, primary := range primaries {
 		// Rename duplicate types so they generate properly
 		for _, v := range primary.Types {
-			for i := range *xsd.Elements(v) {
-				if val, exists := rename[*xsd.XMLNamePtr((*xsd.Elements(v))[i].Type)]; exists {
-					cfg.debugf("renaming type %s in namespace %s to %s", xsd.XMLName((*xsd.Elements(v))[i].Type).Local, xsd.XMLName((*xsd.Elements(v))[i].Type).Space, val)
-					xsd.XMLNamePtr((*xsd.Elements(v))[i].Type).Local = val
+			for _, el := range xsd.Elements(v) {
+				name := xsd.XMLName(el.Type)
+				if val, exists := rename[name]; exists {
+					cfg.debugf("renaming type %s in namespace %s to %s", name.Local, name.Space, val)
+					xsd.XMLNamePtr(el.Type).Local = val
 				}
 			}
 		}
@@ -358,7 +359,7 @@ func (cfg *Config) expandComplexTypes(types []xsd.Type) []xsd.Type {
 			shadowedAttributes[attr.Name] = struct{}{}
 		}
 
-		var elements []xsd.Element
+		var elements []*xsd.Element
 		for _, el := range b.Elements {
 			if _, ok := shadowedElements[el.Name]; !ok {
 				elements = append(elements, el)

@@ -169,7 +169,7 @@ type ComplexType struct {
 	// True if this is an toplevel anonymous type
 	TopLevel bool
 	// XML elements that this type may contain in its content.
-	Elements []Element
+	Elements []*Element
 	// Possible attributes for the element's opening tag.
 	Attributes []Attribute
 	// An abstract type does not appear in the xml document, but
@@ -331,16 +331,16 @@ func XMLNamePtr(t Type) *xml.Name {
 	panic(fmt.Sprintf("xsd: unexpected xsd.Type %[1]T %[1]v passed to XMLNamePtr", t))
 }
 
-func Elements(t Type) *[]Element {
+func Elements(t Type) []*Element {
 	switch t := t.(type) {
 	case *SimpleType:
-		return &[]Element{}
+		return []*Element{}
 	case *ComplexType:
-		return &t.Elements
+		return t.Elements
 	case Builtin:
-		return &[]Element{}
+		return []*Element{}
 	case linkedType:
-		return &[]Element{}
+		return []*Element{}
 	}
 	panic(fmt.Sprintf("xsd: unexpected xsd.Type %[1]T %[1]v passed to Elements", t))
 }
