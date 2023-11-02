@@ -241,7 +241,7 @@ func copyEltNamesToAnonTypes(root *xmltree.Element) {
 
 	withAnonElems := root.SearchFunc(eltWithAnonType)
 	for _, parentElem := range withAnonElems {
-		// create a copy of the original element so we can compare it later in its original state
+		// create a copy of the original element, so we can compare it later in its original state
 		cpy := *parentElem
 		// clone slices so they can't be modified
 		clonedContent := make([]byte, len(cpy.Content))
@@ -258,7 +258,7 @@ func copyEltNamesToAnonTypes(root *xmltree.Element) {
 		for {
 			// check if the name is already in use
 			if anonChild, ok := used[tmpName]; ok {
-				// if the name is in use, check if the elements area identical
+				// if the name is in use, check if the elements are identical
 				if xmltree.Equal(&anonChild, parentElem) {
 					prevMatch = true
 					if offset > 0 {

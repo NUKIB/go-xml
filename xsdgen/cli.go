@@ -134,6 +134,7 @@ func (cfg *Config) GenCLI(arguments ...string) error {
 		packageName                        = fs.String("pkg", "", "name of the the generated package")
 		output                             = fs.String("o", "xsdgen_output.go", "name of the output file")
 		followImports                      = fs.Bool("f", false, "follow import statements; load imported references recursively into scope")
+		prefixDuplicatesOnly               = fs.Bool("d", false, "prefix duplicate types only, works with -np option")
 		targetNamespacesOnly               = fs.Bool("t", false, "restict output of types to these declared in the target namespace(s) provided")
 		applyXMLNameToTopLevelElementTypes = fs.Bool("n", false, "apply XMLName to all top level element types")
 		verbose                            = fs.Bool("v", false, "print verbose output")
@@ -155,6 +156,7 @@ func (cfg *Config) GenCLI(arguments ...string) error {
 		cfg.Option(LogLevel(1))
 	}
 	cfg.Option(Namespaces(xmlns...))
+	cfg.Option(PrefixDuplicatesOnly(*prefixDuplicatesOnly))
 	cfg.Option(FollowImports(*followImports))
 	cfg.Option(TargetNamespacesOnly(*targetNamespacesOnly))
 	cfg.Option(NSPrefixes(nsPrefixes...))

@@ -4,6 +4,7 @@ import (
 	"bytes"
 	"encoding/xml"
 	"fmt"
+	"github.com/henryolik/go-xml/internal/dependency"
 	"go/ast"
 	"go/token"
 	"io"
@@ -11,7 +12,6 @@ import (
 	"strconv"
 	"strings"
 
-	"github.com/henryolik/go-xml/internal/dependency"
 	"github.com/henryolik/go-xml/internal/gen"
 	"github.com/henryolik/go-xml/xmltree"
 	"github.com/henryolik/go-xml/xsd"
@@ -172,7 +172,10 @@ func (cfg *Config) gen(primaries, deps []xsd.Schema) (*Code, error) {
 		}
 	}
 
+	// A map of elements to be renamed with a value
 	rename := make(map[xml.Name]string)
+
+	// A map of all type names and their namespaces
 	types := make(map[string]string)
 
 	// Check for any duplicate names between namespaces and for namespace based struct prefixes
@@ -182,18 +185,25 @@ func (cfg *Config) gen(primaries, deps []xsd.Schema) (*Code, error) {
 				continue
 			}
 
-			if prefix := cfg.nsPrefixes[k.Space]; prefix != "" {
+			// A prefix is not defined
+			if prefix := cfg.nsPrefixes[k.Space]; prefix == "" {
+				// There is a duplicate name in another namespace
+				if types[k.Local] != "" && types[k.Local] != k.Space {
+					// Suffix duplicate element with a namespace id
+					rename[k] = k.Local + fmt.Sprint(i)
+					cfg.debugf("found unhandled duplicate type %s in namespace %s, pending rename to %s", k.Local, k.Space, rename[k])
+					continue
+				}
+
+				// A prefix is defined, and there is either a duplicate present or a -d option missing
+			} else if (types[k.Local] != "" && types[k.Local] != k.Space) || !cfg.prefixDuplicatesOnly {
+				// Use that prefix to rename the duplicate
 				rename[k] = prefix + k.Local
 				cfg.debugf("found type %s in namespace %s, pending rename to %s", k.Local, k.Space, rename[k])
 				continue
 			}
 
-			if types[k.Local] != "" && types[k.Local] != k.Space {
-				rename[k] = k.Local + fmt.Sprint(i)
-				cfg.debugf("found unhandled duplicate type %s in namespace %s, pending rename to %s", k.Local, k.Space, rename[k])
-			} else {
-				types[k.Local] = k.Space
-			}
+			types[k.Local] = k.Space
 		}
 	}
 
@@ -308,6 +318,28 @@ type spec struct {
 // Simplifies complex types derived from other complex types by merging
 // parent fields into the derived type.
 func (cfg *Config) expandComplexTypes(types []xsd.Type) []xsd.Type {
+	// TODO Struct embedding
+	//for _, v := range types {
+	//	c, ok := v.(*xsd.ComplexType)
+	//	if !ok {
+	//		continue
+	//	}
+	//
+	//	base := xsd.Base(v)
+	//	if base == nil {
+	//		continue
+	//	}
+	//
+	//	b, ok := c.Base.(*xsd.ComplexType)
+	//	if !ok {
+	//		continue
+	//	}
+	//
+	//	embedded := xsd.Element{Type: &xsd.SimpleType{Name: xml.Name{Local: b.Name.Local}}}
+	//
+	//	c.Elements = append(c.Elements, &embedded)
+	//}
+
 	index := make(map[xml.Name]int)
 	graph := new(dependency.Graph)
 

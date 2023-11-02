@@ -27,6 +27,7 @@ type Config struct {
 	followImports                      bool
 	targetNamespacesOnly               bool
 	applyXMLNameToTopLevelElementTypes bool
+	prefixDuplicatesOnly               bool
 	preprocessType                     typeTransform
 	postprocessType                    specTransform
 	// Helper functions
@@ -91,6 +92,14 @@ func Namespaces(xmlns ...string) Option {
 		prev := cfg.namespaces
 		cfg.namespaces = xmlns
 		return Namespaces(prev...)
+	}
+}
+
+func PrefixDuplicatesOnly(prefix bool) Option {
+	return func(cfg *Config) Option {
+		prev := cfg.prefixDuplicatesOnly
+		cfg.prefixDuplicatesOnly = prefix
+		return PrefixDuplicatesOnly(prev)
 	}
 }
 
