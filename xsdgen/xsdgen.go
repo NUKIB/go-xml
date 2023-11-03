@@ -200,6 +200,19 @@ func (cfg *Config) gen(primaries, deps []xsd.Schema) (*Code, error) {
 				// Use that prefix to rename the duplicate
 				rename[k] = prefix + k.Local
 				cfg.debugf("found type %s in namespace %s, pending rename to %s", k.Local, k.Space, rename[k])
+
+				// We want to prefix the first occurrence of the name too
+				firstOccurrence := xml.Name{Local: k.Local, Space: types[k.Local]}
+				// But only if we did not prefix it already
+				if name := rename[firstOccurrence]; name == "" {
+					// And if its namespace has any prefix defined
+					if foPrefix := cfg.nsPrefixes[firstOccurrence.Space]; foPrefix != "" {
+						rename[firstOccurrence] = foPrefix + firstOccurrence.Local
+						cfg.debugf("found first occurrence of type %s in namespace %s, pending rename to %s", firstOccurrence.Local, firstOccurrence.Space, rename[firstOccurrence])
+					} else {
+						cfg.debugf("found unhandled first occurrence of a duplicate type %s in namespace %s, not renaming", k.Local, k.Space)
+					}
+				}
 				continue
 			}
 
