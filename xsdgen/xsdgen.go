@@ -210,7 +210,7 @@ func (cfg *Config) gen(primaries, deps []xsd.Schema) (*Code, error) {
 						rename[firstOccurrence] = foPrefix + firstOccurrence.Local
 						cfg.debugf("found first occurrence of type %s in namespace %s, pending rename to %s", firstOccurrence.Local, firstOccurrence.Space, rename[firstOccurrence])
 					} else {
-						cfg.debugf("found unhandled first occurrence of a duplicate type %s in namespace %s, not renaming", k.Local, k.Space)
+						cfg.debugf("found unhandled first occurrence of a duplicate type %s in namespace %s, not renaming", firstOccurrence.Local, firstOccurrence.Space)
 					}
 				}
 				continue
