@@ -7,16 +7,16 @@
 //
 // Code generation for the wsdlgen package can be configured by using
 // the provided Option functions.
-package wsdlgen // import "github.com/henryolik/go-xml/wsdlgen"
+package wsdlgen // import "github.com/nukib/go-xml/wsdlgen"
 
 import (
 	"encoding/xml"
 	"errors"
 	"fmt"
-	"github.com/henryolik/go-xml/internal/gen"
-	"github.com/henryolik/go-xml/wsdl"
-	"github.com/henryolik/go-xml/xsd"
-	"github.com/henryolik/go-xml/xsdgen"
+	"github.com/nukib/go-xml/internal/gen"
+	"github.com/nukib/go-xml/wsdl"
+	"github.com/nukib/go-xml/xsd"
+	"github.com/nukib/go-xml/xsdgen"
 	"go/ast"
 	"golang.org/x/text/cases"
 	"golang.org/x/text/language"

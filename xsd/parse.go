@@ -8,8 +8,8 @@ import (
 	"strings"
 	"time"
 
-	"github.com/henryolik/go-xml/internal/dependency"
-	"github.com/henryolik/go-xml/xmltree"
+	"github.com/nukib/go-xml/internal/dependency"
+	"github.com/nukib/go-xml/xmltree"
 )
 
 func hasCycle(root *xmltree.Element, visited map[*xmltree.Element]struct{}) bool {

@@ -1,11 +1,11 @@
-[![GoDoc](https://godoc.org/github.com/henryolik/go-xml?status.svg)](https://godoc.org/github.com/henryolik/go-xml) [![Build Status](https://travis-ci.org/droyo/go-xml.svg?branch=master)](https://travis-ci.org/droyo/go-xml)
+[![GoDoc](https://godoc.org/github.com/nukib/go-xml?status.svg)](https://godoc.org/github.com/nukib/go-xml)
 
 ## Installation
 
-Requires go 1.21 or greater for golang.org/x/html dependency.
+Requires go 1.21 or greater.
 
 ```
-go get github.com/henryolik/go-xml/...
+go get github.com/nukib/go-xml/...
 ```
 
 This repository contains a collection of Go packages for working

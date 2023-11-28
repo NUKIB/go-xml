@@ -11,8 +11,8 @@ import (
 	"regexp"
 	"strings"
 
-	"github.com/henryolik/go-xml/internal/gen"
-	"github.com/henryolik/go-xml/xsd"
+	"github.com/nukib/go-xml/internal/gen"
+	"github.com/nukib/go-xml/xsd"
 )
 
 // A Config holds user-defined overrides and filters that are used when

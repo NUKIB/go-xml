@@ -4,7 +4,7 @@ import (
 	"log"
 	"os"
 
-	"github.com/henryolik/go-xml/wsdlgen"
+	"github.com/nukib/go-xml/wsdlgen"
 )
 
 func main() {
