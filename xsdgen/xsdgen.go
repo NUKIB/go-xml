@@ -4,6 +4,7 @@ import (
 	"bytes"
 	"encoding/xml"
 	"fmt"
+	"github.com/henryolik/go-xml/internal/dependency"
 	"go/ast"
 	"go/token"
 	"io"
@@ -11,7 +12,6 @@ import (
 	"strconv"
 	"strings"
 
-	"github.com/henryolik/go-xml/internal/dependency"
 	"github.com/henryolik/go-xml/internal/gen"
 	"github.com/henryolik/go-xml/xmltree"
 	"github.com/henryolik/go-xml/xsd"
@@ -47,7 +47,7 @@ func lookupTargetNS(data ...[]byte) []string {
 			continue
 		}
 		outer := xmltree.Element{
-			Children: []xmltree.Element{*tree},
+			Children: []*xmltree.Element{tree},
 		}
 		elts := outer.Search("http://www.w3.org/2001/XMLSchema", "schema")
 		for _, el := range elts {
@@ -172,7 +172,10 @@ func (cfg *Config) gen(primaries, deps []xsd.Schema) (*Code, error) {
 		}
 	}
 
+	// A map of elements to be renamed with a value
 	rename := make(map[xml.Name]string)
+
+	// A map of all type names and their namespaces
 	types := make(map[string]string)
 
 	// Check for any duplicate names between namespaces and for namespace based struct prefixes
@@ -182,28 +185,49 @@ func (cfg *Config) gen(primaries, deps []xsd.Schema) (*Code, error) {
 				continue
 			}
 
-			if prefix := cfg.nsPrefixes[k.Space]; prefix != "" {
+			// A prefix is not defined
+			if prefix := cfg.nsPrefixes[k.Space]; prefix == "" {
+				// There is a duplicate name in another namespace
+				if types[k.Local] != "" && types[k.Local] != k.Space {
+					// Suffix duplicate element with a namespace id
+					rename[k] = k.Local + fmt.Sprint(i)
+					cfg.debugf("found unhandled duplicate type %s in namespace %s, pending rename to %s", k.Local, k.Space, rename[k])
+					continue
+				}
+
+				// A prefix is defined, and there is either a duplicate present or a -d option missing
+			} else if (types[k.Local] != "" && types[k.Local] != k.Space) || !cfg.prefixDuplicatesOnly {
+				// Use that prefix to rename the duplicate
 				rename[k] = prefix + k.Local
 				cfg.debugf("found type %s in namespace %s, pending rename to %s", k.Local, k.Space, rename[k])
+
+				// We want to prefix the first occurrence of the name too
+				firstOccurrence := xml.Name{Local: k.Local, Space: types[k.Local]}
+				// But only if we did not prefix it already
+				if name := rename[firstOccurrence]; name == "" {
+					// And if its namespace has any prefix defined
+					if foPrefix := cfg.nsPrefixes[firstOccurrence.Space]; foPrefix != "" {
+						rename[firstOccurrence] = foPrefix + firstOccurrence.Local
+						cfg.debugf("found first occurrence of type %s in namespace %s, pending rename to %s", firstOccurrence.Local, firstOccurrence.Space, rename[firstOccurrence])
+					} else {
+						cfg.debugf("found unhandled first occurrence of a duplicate type %s in namespace %s, not renaming", firstOccurrence.Local, firstOccurrence.Space)
+					}
+				}
 				continue
 			}
 
-			if types[k.Local] != "" && types[k.Local] != k.Space {
-				rename[k] = k.Local + fmt.Sprint(i)
-				cfg.debugf("found unhandled duplicate type %s in namespace %s, pending rename to %s", k.Local, k.Space, rename[k])
-			} else {
-				types[k.Local] = k.Space
-			}
+			types[k.Local] = k.Space
 		}
 	}
 
 	for _, primary := range primaries {
 		// Rename duplicate types so they generate properly
 		for _, v := range primary.Types {
-			for i := range *xsd.Elements(v) {
-				if val, exists := rename[*xsd.XMLNamePtr((*xsd.Elements(v))[i].Type)]; exists {
-					cfg.debugf("renaming type %s in namespace %s to %s", xsd.XMLName((*xsd.Elements(v))[i].Type).Local, xsd.XMLName((*xsd.Elements(v))[i].Type).Space, val)
-					xsd.XMLNamePtr((*xsd.Elements(v))[i].Type).Local = val
+			for _, el := range xsd.Elements(v) {
+				name := xsd.XMLName(el.Type)
+				if val, exists := rename[name]; exists {
+					cfg.debugf("renaming type %s in namespace %s to %s", name.Local, name.Space, val)
+					xsd.XMLNamePtr(el.Type).Local = val
 				}
 			}
 		}
@@ -307,6 +331,28 @@ type spec struct {
 // Simplifies complex types derived from other complex types by merging
 // parent fields into the derived type.
 func (cfg *Config) expandComplexTypes(types []xsd.Type) []xsd.Type {
+	// TODO Struct embedding
+	//for _, v := range types {
+	//	c, ok := v.(*xsd.ComplexType)
+	//	if !ok {
+	//		continue
+	//	}
+	//
+	//	base := xsd.Base(v)
+	//	if base == nil {
+	//		continue
+	//	}
+	//
+	//	b, ok := c.Base.(*xsd.ComplexType)
+	//	if !ok {
+	//		continue
+	//	}
+	//
+	//	embedded := xsd.Element{Type: &xsd.SimpleType{Name: xml.Name{Local: b.Name.Local}}}
+	//
+	//	c.Elements = append(c.Elements, &embedded)
+	//}
+
 	index := make(map[xml.Name]int)
 	graph := new(dependency.Graph)
 
@@ -358,7 +404,7 @@ func (cfg *Config) expandComplexTypes(types []xsd.Type) []xsd.Type {
 			shadowedAttributes[attr.Name] = struct{}{}
 		}
 
-		var elements []xsd.Element
+		var elements []*xsd.Element
 		for _, el := range b.Elements {
 			if _, ok := shadowedElements[el.Name]; !ok {
 				elements = append(elements, el)
