@@ -6,9 +6,9 @@ import (
 	"log"
 	"os"
 
-	"github.com/henryolik/go-xml/internal/commandline"
-	"github.com/henryolik/go-xml/internal/gen"
-	"github.com/henryolik/go-xml/xsdgen"
+	"github.com/nukib/go-xml/internal/commandline"
+	"github.com/nukib/go-xml/internal/gen"
+	"github.com/nukib/go-xml/xsdgen"
 )
 
 // The GenSource method converts the AST returned by GenAST to formatted

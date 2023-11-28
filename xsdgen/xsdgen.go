@@ -1,10 +1,10 @@
-package xsdgen // import "github.com/henryolik/go-xml/xsdgen"
+package xsdgen // import "github.com/nukib/go-xml/xsdgen"
 
 import (
 	"bytes"
 	"encoding/xml"
 	"fmt"
-	"github.com/henryolik/go-xml/internal/dependency"
+	"github.com/nukib/go-xml/internal/dependency"
 	"go/ast"
 	"go/token"
 	"io"
@@ -12,9 +12,9 @@ import (
 	"strconv"
 	"strings"
 
-	"github.com/henryolik/go-xml/internal/gen"
-	"github.com/henryolik/go-xml/xmltree"
-	"github.com/henryolik/go-xml/xsd"
+	"github.com/nukib/go-xml/internal/gen"
+	"github.com/nukib/go-xml/xmltree"
+	"github.com/nukib/go-xml/xsd"
 )
 
 type orderedStringMap interface {
