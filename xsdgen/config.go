@@ -50,7 +50,7 @@ type Config struct {
 	allowTypes map[xml.Name]bool
 
 	// keep track of files that are read already to avoid reading it again
-	filesRead map[string]bool
+	FilesRead map[string]bool
 }
 
 type typeTransform func(xsd.Schema, xsd.Type) xsd.Type

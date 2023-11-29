@@ -55,8 +55,8 @@ func (cfg *Config) GenCode(data ...[]byte) (*Code, error) {
 // GenAST creates an *ast.File containing type declarations and
 // associated methods based on a set of XML schema.
 func (cfg *Config) GenAST(files ...string) (*ast.File, error) {
-	cfg.filesRead = make(map[string]bool)
-	data, err := cfg.readFiles(files...)
+	cfg.FilesRead = make(map[string]bool)
+	data, err := cfg.ReadFiles(files...)
 	code, err := cfg.GenCode(data...)
 	if err != nil {
 		return nil, err
@@ -64,10 +64,10 @@ func (cfg *Config) GenAST(files ...string) (*ast.File, error) {
 	return code.GenAST()
 }
 
-func (cfg *Config) readFiles(files ...string) ([][]byte, error) {
+func (cfg *Config) ReadFiles(files ...string) ([][]byte, error) {
 	data := make([][]byte, 0, len(files))
 	for _, filename := range files {
-		if _, ok := cfg.filesRead[filename]; ok {
+		if _, ok := cfg.FilesRead[filename]; ok {
 			// skip reading the file again
 			continue
 		}
@@ -80,7 +80,7 @@ func (cfg *Config) readFiles(files ...string) ([][]byte, error) {
 			return nil, err
 		}
 		cfg.debugf("read %s(%s)", path, filename)
-		cfg.filesRead[filename] = true
+		cfg.FilesRead[filename] = true
 		if cfg.followImports {
 			dir := filepath.Dir(path)
 			importedRefs, err := xsd.Imports(b)
@@ -95,7 +95,7 @@ func (cfg *Config) readFiles(files ...string) ([][]byte, error) {
 					importedFiles = append(importedFiles, filepath.Join(dir, r.Location))
 				}
 			}
-			referencedData, err := cfg.readFiles(importedFiles...)
+			referencedData, err := cfg.ReadFiles(importedFiles...)
 			if err != nil {
 				return nil, fmt.Errorf("error reading imported files: %v", err)
 			}

@@ -20,7 +20,6 @@ import (
 	"go/ast"
 	"golang.org/x/text/cases"
 	"golang.org/x/text/language"
-	"os"
 )
 
 var caser = cases.Title(language.English, cases.NoLower)
@@ -100,14 +99,21 @@ func (cfg *Config) GenAST(files ...string) (*ast.File, error) {
 		cfg.pkgHeader = fmt.Sprintf("Package %s", cfg.pkgName)
 	}
 	docs := make([][]byte, 0, len(files))
-	for _, filename := range files {
-		if data, err := os.ReadFile(filename); err != nil {
-			return nil, err
-		} else {
-			cfg.debugf("read %s", filename)
-			docs = append(docs, data)
-		}
+	//for _, filename := range files {
+	//	if data, err := os.ReadFile(filename); err != nil {
+	//		return nil, err
+	//	} else {
+	//		cfg.debugf("read %s", filename)
+	//		docs = append(docs, data)
+	//	}
+	//}
+
+	data, err := cfg.xsdgen.ReadFiles(files...)
+	if err != nil {
+		return nil, err
 	}
+
+	docs = append(docs, data...)
 
 	cfg.debugf("parsing WSDL file %s", files[0])
 	def, err := wsdl.Parse(docs[0])
