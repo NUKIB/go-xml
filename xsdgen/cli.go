@@ -15,7 +15,7 @@ import (
 )
 
 // GenCode reads all xml schema definitions from the provided
-// data. If succesful, the returned *Code value can be used to
+// data. If successful, the returned *Code value can be used to
 // lookup identifiers and generate Go code.
 func (cfg *Config) GenCode(data ...[]byte) (*Code, error) {
 	if len(cfg.namespaces) == 0 {
@@ -57,10 +57,15 @@ func (cfg *Config) GenCode(data ...[]byte) (*Code, error) {
 func (cfg *Config) GenAST(files ...string) (*ast.File, error) {
 	cfg.FilesRead = make(map[string]bool)
 	data, err := cfg.ReadFiles(files...)
+	if err != nil {
+		return nil, err
+	}
+
 	code, err := cfg.GenCode(data...)
 	if err != nil {
 		return nil, err
 	}
+
 	return code.GenAST()
 }
 
