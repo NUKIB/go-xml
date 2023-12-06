@@ -196,7 +196,7 @@ func TestNSResolution(t *testing.T) {
 	}
 
 	defaultns := root.SearchFunc(func(el *Element) bool {
-		if (el.Name != xml.Name{"http://schemas.xmlsoap.org/wsdl/", "binding"}) {
+		if (el.Name != xml.Name{Space: "http://schemas.xmlsoap.org/wsdl/", Local: "binding"}) {
 			return false
 		}
 		return el.Attr("", "name") == "wseDocReciboSoap12"
@@ -273,16 +273,21 @@ func TestUnmarshal(t *testing.T) {
 	}
 	var v searchItem
 	const changedURL = "http://i-changed-this/"
-	var item *Element
-	for _, item = range root.Search("", "item") {
-		for i, c := range item.Children {
-			if c.Name.Local == "URL" {
-				item.Children[i].Content = []byte(changedURL)
-			}
-		}
-		t.Logf("test unmarshal %s", Marshal(item))
-		break
+
+	items := root.Search("", "item")
+	if len(items) < 1 {
+		t.Errorf("no element with name \"item\" found")
 	}
+
+	item := items[0]
+
+	for i, c := range item.Children {
+		if c.Name.Local == "URL" {
+			item.Children[i].Content = []byte(changedURL)
+		}
+	}
+	t.Logf("test unmarshal %s", Marshal(item))
+
 	if err := Unmarshal(item, &v); err != nil {
 		t.Fatal(err)
 	}

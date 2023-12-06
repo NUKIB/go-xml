@@ -43,7 +43,7 @@ func (cfg *Config) GenCLI(arguments ...string) error {
 		return err
 	}
 	if fs.NArg() == 0 {
-		return errors.New("Usage: wsdlgen [-r rule] [-o file] [-port name] [-pkg pkg] file ...")
+		return errors.New("usage: wsdlgen [-r rule] [-o file] [-port name] [-pkg pkg] file ... ")
 	}
 
 	if *debug {

@@ -26,7 +26,7 @@ func testGen(t *testing.T, files ...string) {
 	cfg.xsdgen.Option(xsdgen.DefaultOptions...)
 	cfg.xsdgen.Option(xsdgen.UseFieldNames())
 
-	args := []string{"-vv", "-o", outputFile.Name()}
+	args := []string{"-vv", "-f", "-o", outputFile.Name()}
 	err = cfg.GenCLI(append(args, files...)...)
 	if err != nil {
 		t.Error(err)

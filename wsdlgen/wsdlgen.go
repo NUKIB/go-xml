@@ -98,16 +98,8 @@ func (cfg *Config) GenAST(files ...string) (*ast.File, error) {
 	if cfg.pkgHeader == "" {
 		cfg.pkgHeader = fmt.Sprintf("Package %s", cfg.pkgName)
 	}
-	docs := make([][]byte, 0, len(files))
-	//for _, filename := range files {
-	//	if data, err := os.ReadFile(filename); err != nil {
-	//		return nil, err
-	//	} else {
-	//		cfg.debugf("read %s", filename)
-	//		docs = append(docs, data)
-	//	}
-	//}
 
+	docs := make([][]byte, 0, len(files))
 	data, err := cfg.xsdgen.ReadFiles(files...)
 	if err != nil {
 		return nil, err

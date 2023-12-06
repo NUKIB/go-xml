@@ -1068,11 +1068,10 @@ func parseMinMaxRestriction(el *xmltree.Element, base Type) (time.Time, float64)
 		// The base of the linked type is unknown, try to parse dates and decimals
 		d, err := time.Parse("2006-01-02", el.Attr("", "value"))
 		if err != nil {
-			d, err := time.Parse(time.RFC3339, el.Attr("", "value"))
+			d, err = time.Parse(time.RFC3339, el.Attr("", "value"))
 			if err != nil {
 				decimal = parseDecimal(el.Attr("", "value"))
 			}
-			date = d
 		}
 		date = d
 	} else {

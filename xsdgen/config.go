@@ -566,7 +566,7 @@ func (cfg *Config) public(name xml.Name) string {
 //
 // XML Schema is wonderful, aint it?
 func (cfg *Config) parseSOAPArrayType(s xsd.Schema, t xsd.Type) xsd.Type {
-	const soapenc = "http://schemas.xmlsoap.org/soap/encoding/"
+	// const soapenc = "http://schemas.xmlsoap.org/soap/encoding/"
 	const wsdl = "http://schemas.xmlsoap.org/wsdl/"
 	var itemType xml.Name
 
@@ -856,7 +856,7 @@ func (cfg *Config) soapArrayToSlice(s spec) spec {
 	} else {
 		unmarshalFn = unmarshalFn.Body(`
 			var tok xml.Token
-			var itemTag = xml.Name{%q, %q}
+			var itemTag = xml.Name{Space: %q, Local: %q}
 			
 			for tok, err = d.Token(); err == nil; tok, err = d.Token() {
 				if tok, ok := tok.(xml.StartElement); ok {
@@ -885,6 +885,12 @@ func (cfg *Config) soapArrayToSlice(s spec) spec {
 	if xmltag.Local == ",any" {
 		xmltag.Local = "item"
 	}
+
+	space := " "
+	if xmltag.Space == "" {
+		space = ""
+	}
+
 	marshal, err := gen.Func("MarshalXML").
 		Receiver("a "+s.name).
 		Args("e *xml.Encoder", "start xml.StartElement").
@@ -892,16 +898,16 @@ func (cfg *Config) soapArrayToSlice(s spec) spec {
 		Body(`
 			var output struct {
 				ArrayType string `+"`xml:\"http://schemas.xmlsoap.org/wsdl/ arrayType,attr\"`"+`
-				Items []%[1]s `+"`xml:\"%[2]s %[3]s\"`"+`
+				Items []%[1]s `+"`xml:\"%[2]s%[3]s%[4]s\"`"+`
 			}
 			output.Items = []%[1]s(a)
 			start.Attr = append(start.Attr, xml.Attr {
-				Name: xml.Name{"", "xmlns:ns1"},
-				Value: %[4]q,
+				Name: xml.Name{Space: "", Local: "xmlns:ns1"},
+				Value: %[5]q,
 			})
-			output.ArrayType = "ns1:%[5]s[]"
+			output.ArrayType = "ns1:%[6]s[]"
 			return e.EncodeElement(&output, start)
-		`, itemType, xmltag.Space, xmltag.Local, baseType.Space, baseType.Local).Decl()
+		`, itemType, xmltag.Space, space, xmltag.Local, baseType.Space, baseType.Local).Decl()
 	if err != nil {
 		cfg.logf("error generating MarshalXML method of %s: %v", s.name, err)
 		return s

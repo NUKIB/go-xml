@@ -143,7 +143,7 @@ func genXSDTests(cfg xsdgen.Config, data []byte, pkg string) (code, tests *ast.F
 				t.Fatal("expected one sample file, found ", samples)
 			}
 			
-			input, err := ioutil.ReadFile(samples[0])
+			input, err := os.ReadFile(samples[0])
 			if err != nil {
 				t.Fatal(err)
 			}
