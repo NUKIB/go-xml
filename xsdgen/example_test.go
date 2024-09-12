@@ -324,6 +324,9 @@ func ExampleUseFieldNames() {
 	// type xsdDate time.Time
 	//
 	// func (t *xsdDate) UnmarshalText(text []byte) error {
+	// 	if len(text) == 0 {
+	// 		return nil
+	// 	}
 	// 	return _unmarshalTime(text, (*time.Time)(t), "2006-01-02")
 	// }
 	// func (t xsdDate) MarshalText() ([]byte, error) {

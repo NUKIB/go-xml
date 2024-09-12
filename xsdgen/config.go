@@ -711,10 +711,11 @@ func (cfg *Config) addStandardHelpers() {
 					Receiver("t *"+name).
 					Args("text []byte").
 					Returns("error").
-					Body(`if len(text) == 0 {
-                                     return nil
-                                 }
-                                 return _unmarshalTime(text, (*time.Time)(t), %q)`, timeSpec).
+					Body(`
+						if len(text) == 0 {
+							return nil
+						}
+						return _unmarshalTime(text, (*time.Time)(t), %q)`, timeSpec).
 					MustDecl(),
 				gen.Func("MarshalText").
 					Receiver("t "+name).
