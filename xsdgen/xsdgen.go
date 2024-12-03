@@ -941,7 +941,9 @@ func (cfg *Config) genComplexTypeMethods(t *xsd.ComplexType, overrides []fieldOv
 			{{end -}}
 			{{end}}
 
-			return d.DecodeElement(&overlay, &start)
+            err := d.DecodeElement(&overlay, &start)
+            t.{{.FieldName}} = ({{.FromType}})(overlay.{{.FieldName}})
+			return err
 		`, data).Decl()
 	if err != nil {
 		return nil, nil, err
