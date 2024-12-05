@@ -314,7 +314,8 @@ func ExampleUseFieldNames() {
 	//	}
 	//	overlay.T = (*T)(t)
 	//	overlay.Published = (*xsdDate)(&overlay.T.Published)
-	//	return d.DecodeElement(&overlay, &start)
+	//	err := d.DecodeElement(&overlay, &start)
+	//	return err
 	//}
 	//
 	// type Library struct {
