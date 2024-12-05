@@ -26,15 +26,16 @@ func (cfg *Config) GenSource(files ...string) ([]byte, error) {
 // command-line interfaces to the wsdlgen package.
 func (cfg *Config) GenCLI(arguments ...string) error {
 	var (
-		err          error
-		replaceRules commandline.ReplaceRuleList
-		ports        commandline.Strings
-		fs           = flag.NewFlagSet("wsdlgen", flag.ExitOnError)
-		packageName  = fs.String("pkg", "", "name of the generated package")
-		comment      = fs.String("c", "", "First line of package-level comments")
-		output       = fs.String("o", "wsdlgen_output.go", "name of the output file")
-		verbose      = fs.Bool("v", false, "print verbose output")
-		debug        = fs.Bool("vv", false, "print debug output")
+		err           error
+		replaceRules  commandline.ReplaceRuleList
+		ports         commandline.Strings
+		fs            = flag.NewFlagSet("wsdlgen", flag.ExitOnError)
+		packageName   = fs.String("pkg", "", "name of the generated package")
+		comment       = fs.String("c", "", "First line of package-level comments")
+		followImports = fs.Bool("f", false, "follow xsd import statements; load imported references recursively into scope")
+		output        = fs.String("o", "wsdlgen_output.go", "name of the output file")
+		verbose       = fs.Bool("v", false, "print verbose output")
+		debug         = fs.Bool("vv", false, "print debug output")
 	)
 	fs.Var(&replaceRules, "r", "replacement rule 'regex -> repl' (can be used multiple times)")
 	fs.Var(&ports, "port", "gen code for this port (can be used multiple times)")
@@ -42,7 +43,7 @@ func (cfg *Config) GenCLI(arguments ...string) error {
 		return err
 	}
 	if fs.NArg() == 0 {
-		return errors.New("Usage: wsdlgen [-r rule] [-o file] [-port name] [-pkg pkg] file ...")
+		return errors.New("usage: wsdlgen [-r rule] [-o file] [-port name] [-pkg pkg] file ... ")
 	}
 
 	if *debug {
@@ -60,6 +61,10 @@ func (cfg *Config) GenCLI(arguments ...string) error {
 	if len(ports) > 0 {
 		cfg.Option(OnlyPorts(ports...))
 	}
+
+	cfg.XSDOption(xsdgen.FollowImports(*followImports))
+	cfg.xsdgen.FilesRead = make(map[string]bool)
+
 	for _, r := range replaceRules {
 		cfg.XSDOption(xsdgen.Replace(r.From.String(), r.To))
 	}

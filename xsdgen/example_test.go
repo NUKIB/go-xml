@@ -230,10 +230,10 @@ func ExampleSOAPArrayAsSlice() {
 	// func (a BoolArray) MarshalXML(e *xml.Encoder, start xml.StartElement) error {
 	// 	var output struct {
 	// 		ArrayType string `xml:"http://schemas.xmlsoap.org/wsdl/ arrayType,attr"`
-	// 		Items     []bool `xml:" item"`
+	// 		Items     []bool `xml:"item"`
 	// 	}
 	// 	output.Items = []bool(a)
-	// 	start.Attr = append(start.Attr, xml.Attr{Name: xml.Name{"", "xmlns:ns1"}, Value: "http://www.w3.org/2001/XMLSchema"})
+	// 	start.Attr = append(start.Attr, xml.Attr{Name: xml.Name{Space: "", Local: "xmlns:ns1"}, Value: "http://www.w3.org/2001/XMLSchema"})
 	// 	output.ArrayType = "ns1:boolean[]"
 	// 	return e.EncodeElement(&output, start)
 	// }
@@ -314,7 +314,8 @@ func ExampleUseFieldNames() {
 	//	}
 	//	overlay.T = (*T)(t)
 	//	overlay.Published = (*xsdDate)(&overlay.T.Published)
-	//	return d.DecodeElement(&overlay, &start)
+	//	err := d.DecodeElement(&overlay, &start)
+	//	return err
 	//}
 	//
 	// type Library struct {
@@ -324,6 +325,9 @@ func ExampleUseFieldNames() {
 	// type xsdDate time.Time
 	//
 	// func (t *xsdDate) UnmarshalText(text []byte) error {
+	// 	if len(text) == 0 {
+	// 		return nil
+	// 	}
 	// 	return _unmarshalTime(text, (*time.Time)(t), "2006-01-02")
 	// }
 	// func (t xsdDate) MarshalText() ([]byte, error) {

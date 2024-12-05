@@ -29,6 +29,7 @@ type Definition struct {
 	Ports    []Port
 	Message  map[xml.Name]Message
 	TargetNS string
+	Types    *xmltree.Element
 }
 
 func (def *Definition) String() string {

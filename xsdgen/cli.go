@@ -15,7 +15,7 @@ import (
 )
 
 // GenCode reads all xml schema definitions from the provided
-// data. If succesful, the returned *Code value can be used to
+// data. If successful, the returned *Code value can be used to
 // lookup identifiers and generate Go code.
 func (cfg *Config) GenCode(data ...[]byte) (*Code, error) {
 	if len(cfg.namespaces) == 0 {
@@ -55,19 +55,24 @@ func (cfg *Config) GenCode(data ...[]byte) (*Code, error) {
 // GenAST creates an *ast.File containing type declarations and
 // associated methods based on a set of XML schema.
 func (cfg *Config) GenAST(files ...string) (*ast.File, error) {
-	cfg.filesRead = make(map[string]bool)
-	data, err := cfg.readFiles(files...)
+	cfg.FilesRead = make(map[string]bool)
+	data, err := cfg.ReadFiles(files...)
+	if err != nil {
+		return nil, err
+	}
+
 	code, err := cfg.GenCode(data...)
 	if err != nil {
 		return nil, err
 	}
+
 	return code.GenAST()
 }
 
-func (cfg *Config) readFiles(files ...string) ([][]byte, error) {
+func (cfg *Config) ReadFiles(files ...string) ([][]byte, error) {
 	data := make([][]byte, 0, len(files))
 	for _, filename := range files {
-		if _, ok := cfg.filesRead[filename]; ok {
+		if _, ok := cfg.FilesRead[filename]; ok {
 			// skip reading the file again
 			continue
 		}
@@ -79,8 +84,8 @@ func (cfg *Config) readFiles(files ...string) ([][]byte, error) {
 		if err != nil {
 			return nil, err
 		}
-		cfg.debugf("read %s(%s)", path, filename)
-		cfg.filesRead[filename] = true
+		cfg.debugf("read %s (%s)", path, filename)
+		cfg.FilesRead[filename] = true
 		if cfg.followImports {
 			dir := filepath.Dir(path)
 			importedRefs, err := xsd.Imports(b)
@@ -89,20 +94,23 @@ func (cfg *Config) readFiles(files ...string) ([][]byte, error) {
 			}
 			importedFiles := make([]string, 0, len(importedRefs))
 			for _, r := range importedRefs {
+				if r.Location == "" {
+					continue
+				}
+
 				if filepath.IsAbs(r.Location) {
 					importedFiles = append(importedFiles, r.Location)
 				} else {
 					importedFiles = append(importedFiles, filepath.Join(dir, r.Location))
 				}
 			}
-			referencedData, err := cfg.readFiles(importedFiles...)
+			referencedData, err := cfg.ReadFiles(importedFiles...)
 			if err != nil {
 				return nil, fmt.Errorf("error reading imported files: %v", err)
 			}
-			for _, d := range referencedData {
-				// prepend imported refs (i.e. append before the referencing file)
-				data = append(data, d)
-			}
+
+			// prepend imported refs (i.e. append before the referencing file)
+			data = append(data, referencedData...)
 		}
 		data = append(data, b)
 	}
@@ -148,7 +156,7 @@ func (cfg *Config) GenCLI(arguments ...string) error {
 		return err
 	}
 	if fs.NArg() == 0 {
-		return errors.New("Usage: xsdgen [-ns xmlns] [-r rule] [-o file] [-pkg pkg] file ...")
+		return errors.New("usage: xsdgen [-ns xmlns] [-r rule] [-o file] [-pkg pkg] file ... ")
 	}
 	if *debug {
 		cfg.Option(LogLevel(5))

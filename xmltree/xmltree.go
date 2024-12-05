@@ -131,7 +131,7 @@ func (scope *Scope) ResolveDefault(qname, defaultns string) xml.Name {
 	if defaultns == "" || strings.Contains(qname, ":") {
 		return scope.Resolve(qname)
 	}
-	return xml.Name{defaultns, qname}
+	return xml.Name{Space: defaultns, Local: qname}
 }
 
 // Prefix is the inverse of Resolve. It uses the closest prefix
@@ -166,9 +166,9 @@ func (scope *Scope) pushNS(tag xml.StartElement) []xml.Attr {
 	var newAttrs []xml.Attr
 	for _, attr := range tag.Attr {
 		if attr.Name.Space == "xmlns" {
-			ns = append(ns, xml.Name{attr.Value, attr.Name.Local})
+			ns = append(ns, xml.Name{Space: attr.Value, Local: attr.Name.Local})
 		} else if attr.Name.Local == "xmlns" {
-			ns = append(ns, xml.Name{attr.Value, ""})
+			ns = append(ns, xml.Name{Space: attr.Value})
 		} else {
 			newAttrs = append(newAttrs, attr)
 		}
@@ -269,7 +269,7 @@ walk:
 			el.Children = append(el.Children, child)
 		case xml.EndElement:
 			if tok.Name != el.Name {
-				return fmt.Errorf("Expecting </%s>, got </%s>", el.Prefix(el.Name), el.Prefix(tok.Name))
+				return fmt.Errorf("expecting </%s>, got </%s>", el.Prefix(el.Name), el.Prefix(tok.Name))
 			}
 			el.Content = data[int(begin):int(end)]
 			break walk
@@ -308,7 +308,7 @@ func (el *Element) SetAttr(space, local, value string) {
 		}
 	}
 	el.StartElement.Attr = append(el.StartElement.Attr, xml.Attr{
-		Name:  xml.Name{space, local},
+		Name:  xml.Name{Space: space, Local: local},
 		Value: value,
 	})
 }
